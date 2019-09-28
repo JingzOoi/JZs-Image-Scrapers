@@ -2,10 +2,11 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import json
-from random import randint
 
 
 class Illust:
+
+    '''Creates an instance of a pixiv illustration thread. Does not work with R-18 images and copyrighted images.'''
 
     def __init__(self, url, session: requests.Session = None):
         self.illust_url = url
