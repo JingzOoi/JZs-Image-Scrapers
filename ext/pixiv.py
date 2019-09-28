@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import json
+import ext.misc as misc
 
 
 class Illust:
@@ -35,9 +36,7 @@ class Illust:
         self.category = f'Downloads\\pixiv\\[{self.details["user_id"]}] - {self.details["user_name"]}\\[{self.id}] - {self.details["illust_title"]}'
 
     def __repr__(self):
-        details_str = ''
-        for item in self.details:
-            details_str += f'{item}: {self.details[item]}\n'
+        details_str = misc.dict_to_str(self.details)
         return details_str
 
     def get_pages(self) -> dict:
@@ -53,6 +52,45 @@ class Illust:
         with self.sess.get(detail_url) as page:
             if page.status_code == 200:
                 return page.json()
+
+
+class User:
+    '''Creates an instance of a pixiv user.'''
+    sess = requests.Session()
+
+    def __init__(self, url):
+        self.id = re.search(r'([0-9]+)', url).group(0)
+        self.url = f'https://www.pixiv.net/member_illust.php?id={self.id}'
+        self.illusts_raw = self.get_illusts()
+        self.illusts = [
+            f'https://www.pixiv.net/en/artworks/{item}' for item in list(self.illusts_raw["body"]["illusts"])]
+        self.illusts_count = len(self.illusts)
+        self.details = self.get_user_details()
+
+    def __repr__(self):
+        details_str = misc.dict_to_str(self.details)
+        return details_str
+
+    def get_illusts(self):
+        illusts_raw_url = f'https://www.pixiv.net/ajax/user/{self.id}/profile/all'
+        with self.sess.get(illusts_raw_url) as page:
+            if page.status_code == 200:
+                return page.json()
+            elif page.status_code == 404:
+                raise AlbumNotFoundException
+
+    def get_user_details(self):
+        sess = self.sess
+        sample_illust = Illust(self.illusts[0], session=sess)
+        self.name = sample_illust.details["user_name"]
+        artist_details = {
+            "name": self.name,
+            "id": self.id,
+            "profile": self.url,
+            "illusts_count": self.illusts_count
+        }
+        self.details = artist_details
+        return artist_details
 
 
 class AlbumNotFoundException(Exception):
