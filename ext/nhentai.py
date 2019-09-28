@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import re
+import ext.misc as misc
 
 
 class Gallery:
@@ -14,9 +15,7 @@ class Gallery:
         self.category = f'Downloads\\nhentai\\{self.details["artist"][0]}\\{re.search(r"[0-9]+", self.url).group(0)}'
 
     def __repr__(self) -> str:
-        details_str = ''
-        for item in self.details:
-            details_str += f'{item}: {self.details[item]}\n'
+        details_str = misc.dict_to_str(self.details)
         return details_str
 
     def get_details(self):
