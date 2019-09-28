@@ -4,10 +4,21 @@ from time import sleep
 
 
 def list_to_str(list_: list) -> str:
-    string = ''
+    list_str = ''
     for item in list_:
-        string += f'{item}'
-    return string
+        list_str += f'{item}'
+        if item != list_[-1]:
+            list_str += '\n'
+    return list_str
+
+
+def dict_to_str(dict_: dict) -> str:
+    dict_str = ''
+    for item in list(dict_):
+        dict_str += f'{item}: {dict_[item]}'
+        if item != list(dict_)[-1]:
+            dict_str += '\n'
+    return dict_str
 
 
 class Image:
