@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import ext.pixiv as pixiv
 import ext.nhentai as nhentai
 import ext.misc as misc
+import ext.danbooru as danbooru
 import requests
 
 sess = requests.Session()
@@ -14,11 +15,15 @@ def parse_url(url: str, return_details: bool = False):
         album = pixiv.User(url, session=sess)
     elif 'nhentai' in url:
         album = nhentai.Gallery(url, session=sess)
+    elif 'danbooru' in url and '?tags=' in url:
+        album = danbooru.Collection(url, session=sess)
+    elif 'danbooru' in url and '/posts/' in url:
+        album = danbooru.Post(url, session=sess)
     else:
         raise SiteNotSupportedException
 
     if return_details is True:
-        return repr(album), str(album)
+        return str(album), repr(album)
     else:
         album.download()
         sg.PopupOK("Completed.", title="Download operations complete.")
