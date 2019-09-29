@@ -17,11 +17,10 @@ class Gallery:
         self.pages = []
 
     def __repr__(self) -> str:
-        details_str = misc.dict_to_str(self.details)
-        return details_str
+        return 'NHentai Gallery'
 
     def __str__(self) -> str:
-        return 'NHentai Gallery'
+        return json.dumps(self.details, indent=4, ensure_ascii=False)
 
     def get_details(self):
         with self.sess.get(self.url) as resp:
@@ -73,9 +72,12 @@ class Gallery:
         with concurrent.futures.ThreadPoolExecutor(3) as executor:
             executor.map(self.get_page_image, pages)
 
+    def img_download(self, url):
+        img = misc.Image(url, category=self.category, session=self.sess)
+        img.download()
+
     def download(self):
         self.get_page_images()
-        misc.download_images_from_url_list(
-            self.pages, self.category, self.sess)
-        with open(os.path.join(self.category, 'metadata.txt'), 'w') as f:
-            f.write(self.__repr__())
+        with concurrent.futures.ThreadPoolExecutor(3) as executor:
+            executor.map(self.img_download, self.pages)
+        misc.write_metadata(self.category, self.__str__())
