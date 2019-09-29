@@ -1,6 +1,11 @@
 import requests
 import os
 from time import sleep
+import shutil
+
+
+class AlbumNotFoundException(Exception):
+    '''Raised when album is not found. Work may have been deleted, or the ID does not exist.'''
 
 
 def list_to_str(list_: list) -> str:
@@ -23,13 +28,12 @@ def dict_to_str(dict_: dict) -> str:
 
 class Image:
 
-    sess = requests.Session()
-
-    def __init__(self, url: str, category: str, name: str = None):
+    def __init__(self, url: str, category: str,  session: requests.Session = requests.Session(), name: str = None):
         self.url = url
         self.category = category
         self.name = f'{name}{os.path.splitext(self.url)[-1]}' if name is not None else os.path.basename(
             self.url)
+        self.sess = session
 
     def get_image(self):
         with self.sess.get(self.url, headers={"referer": self.url}) as page:
@@ -38,7 +42,7 @@ class Image:
                 self.time = page.elapsed.total_seconds()
                 return page.content
 
-    def get_details(self):
+    def get_details(self) -> dict:
         content = self.get_image()
         return {"file_size": len(content)}
 
@@ -56,19 +60,36 @@ def loadingBar(maximumNumber, currentNumber, startingNumber=0, message=''):
     print(load, end='')
 
 
-def batch_download(image_url_list, image_category, show_progress=False):
-    total = len(image_url_list)
-    total_content, total_time = 0, 0
-    for num, image_url in enumerate(image_url_list, start=1):
-        img = Image(image_url, image_category)
-        img.download()
-        total_content += img.size
-        total_time += img.time
-        sleep(img.time)
-        if show_progress is True:
-            loadingBar(
-                maximumNumber=len(image_url_list),
-                currentNumber=num,
-                message=f'{num}/{total} - {img.name} ({round((total_content/total_time)/1000, 2):,} kb/s)')
-    if show_progress is True:
-        print('\n')
+def download_image_from_url(url, category, session):
+    img = Image(url, category, session=session)
+    img.download()
+
+
+def download_images_from_url_list(images_url_list: list, category: str, session: requests.Session = requests.Session()):
+    sess = session
+    for image_url in images_url_list:
+        download_image_from_url(image_url, category, sess)
+
+
+def compile_from_folder(folder_path):
+    folders = os.listdir(folder_path)
+
+    compilation_folder = os.path.join(folder_path, 'compilation')
+
+    os.makedirs(compilation_folder, exist_ok=True)
+
+    whitelist = ['metadata.txt', 'compilation']
+
+    for folder in folders:
+        src = os.path.join(folder_path, folder)
+        files = os.listdir(src)
+        for file in files:
+            if file not in whitelist:
+                try:
+                    shutil.copyfile(os.path.join(src, file),
+                                    os.path.join(compilation_folder, file))
+                except PermissionError as e:
+                    print(f'Overlooking Permission Error in {e}')
+                    continue
+                except shutil.SameFileError:
+                    continue
