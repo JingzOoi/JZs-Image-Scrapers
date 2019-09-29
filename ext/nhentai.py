@@ -3,20 +3,25 @@ from bs4 import BeautifulSoup
 import json
 import re
 import ext.misc as misc
+import os
+import concurrent.futures
 
 
 class Gallery:
 
-    sess = requests.Session()
-
-    def __init__(self, url):
+    def __init__(self, url, session: requests.Session = requests.Session()):
         self.url = url
+        self.sess = session
         self.details = self.get_details()
         self.category = f'Downloads\\nhentai\\{self.details["artist"][0]}\\{re.search(r"[0-9]+", self.url).group(0)}'
+        self.pages = []
 
     def __repr__(self) -> str:
         details_str = misc.dict_to_str(self.details)
         return details_str
+
+    def __str__(self) -> str:
+        return 'NHentai Gallery'
 
     def get_details(self):
         with self.sess.get(self.url) as resp:
@@ -54,22 +59,23 @@ class Gallery:
                 return metaDict
 
             elif resp.status_code == 404:
-                raise AlbumNotFoundException
+                raise misc.AlbumNotFoundException
+
+    def get_page_image(self, url):
+        with self.sess.get(url) as resp:
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, 'lxml')
+                self.pages.append(
+                    soup.find('img', class_='fit-horizontal')["src"])
 
     def get_page_images(self):
         pages = self.pages_raw
-        image_list = []
-        for page_url in pages:
-            with self.sess.get(page_url) as resp:
-                if resp.status_code == 200:
-                    soup = BeautifulSoup(resp.text, 'lxml')
-                    image_list.append(
-                        soup.find('img', class_='fit-horizontal')["src"])
+        with concurrent.futures.ThreadPoolExecutor(3) as executor:
+            executor.map(self.get_page_image, pages)
 
-        self.details["page_images"] = image_list
-        return image_list
-
-
-class AlbumNotFoundException(Exception):
-    '''Raised when album cannot be found at specified URL.'''
-    pass
+    def download(self):
+        self.get_page_images()
+        misc.download_images_from_url_list(
+            self.pages, self.category, self.sess)
+        with open(os.path.join(self.category, 'metadata.txt'), 'w') as f:
+            f.write(self.__repr__())
