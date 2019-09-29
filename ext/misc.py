@@ -70,6 +70,10 @@ def download_images_from_url_list(images_url_list: list, category: str, session:
     for image_url in images_url_list:
         download_image_from_url(image_url, category, sess)
 
+def write_metadata(folder:str, content:str):
+    with open(os.path.join(folder, 'metadata.txt'), 'w') as f:
+        f.write(content)
+
 
 def compile_from_folder(folder_path):
     folders = os.listdir(folder_path)
