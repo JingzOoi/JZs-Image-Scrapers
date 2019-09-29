@@ -15,7 +15,7 @@ def parse_url(url: str, return_details: bool = False):
     elif 'nhentai' in url:
         album = nhentai.Gallery(url, session=sess)
     else:
-        raise misc.AlbumNotFoundException
+        raise SiteNotSupportedException
 
     if return_details is True:
         return repr(album), str(album)
@@ -25,6 +25,7 @@ def parse_url(url: str, return_details: bool = False):
 
 
 class SiteNotSupportedException(Exception):
+    '''Raised when the url submitted is not recognised as one of the sites supported by the script.'''
     pass
 
 
