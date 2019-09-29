@@ -43,11 +43,10 @@ class Illust:
         self.category = f'Downloads\\pixiv\\[{self.details["user_id"]}] - {self.details["user_name"]}\\[{self.id}] - {self.details["illust_title"]}'
 
     def __repr__(self) -> str:
-        details_str = misc.dict_to_str(self.details)
-        return details_str
+        return "Pixiv Illust"
 
     def __str__(self) -> str:
-        return "Pixiv Illust"
+        return json.dumps(self.details, indent=4, ensure_ascii=False)
 
     def get_pages(self) -> dict:
         with self.sess.get(self.pages_json, headers={'referer': self.illust_url}) as page:
@@ -66,8 +65,7 @@ class Illust:
     def download(self):
         misc.download_images_from_url_list(
             self.pages["original"], self.category, self.sess)
-        with open(os.path.join(self.category, 'metadata.txt'), 'w') as f:
-            f.write(self.__repr__())
+        misc.write_metadata(self.category, self.__str__())
 
 
 class User:
@@ -84,11 +82,10 @@ class User:
         self.details = self.get_user_details()
 
     def __repr__(self) -> str:
-        details_str = misc.dict_to_str(self.details)
-        return details_str
+        return "Pixiv User"
 
     def __str__(self) -> str:
-        return "Pixiv User"
+        return json.dumps(self.details, indent=4, ensure_ascii=False)
 
     def get_illusts(self):
         illusts_raw_url = f'https://www.pixiv.net/ajax/user/{self.id}/profile/all'
@@ -111,9 +108,8 @@ class User:
         self.details = artist_details
         return artist_details
 
-    @staticmethod
-    def convert_illust_url_to_illust_instance_from_list_then_download(illust_url):
-        illust = Illust(illust_url)
+    def convert_illust_url_to_illust_instance_from_list_then_download(self, illust_url):
+        illust = Illust(illust_url, session=self.sess)
         illust.download()
 
     def download(self, limit_end: int = None, limit_start: int = None):
