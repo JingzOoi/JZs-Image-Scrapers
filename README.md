@@ -16,6 +16,7 @@ Aiming to have this version print nothing from their extension files, just retur
     <li>make sure you have at least python 3.6 installed</li>
     <li>download and extract zip to folder</li>
     <li>open powershell in folder (shift + right click)</li>
+    <li>install requirements using "pip install -r requirements.txt" (for first time users)</li>
     <li>type "python mainGUI.py" and press enter</li>
     <li>window should pop up and ready to use</li>
 </ol>
