@@ -8,7 +8,24 @@ Aiming to have this version print nothing from their extension files, just retur
 <ol>
     <li> pixiv.net </li>
     <li> nhentai.net </li>
+    <li> danbooru.donmai.us </li>
+</ol>
+
+# How to install and use (GUI):
+<ol>
+    <li>make sure you have at least python 3.6 installed</li>
+    <li>download and extract zip to folder</li>
+    <li>open powershell in folder (shift + right click)</li>
+    <li>type "python mainGUI.py" and press enter</li>
+    <li>window should pop up and ready to use</li>
+</ol>
+
+# Features:
+<ol>
+    <li>Download images from popular image boards with high quality</li>
 </ol>
 
 # Limitations:
 Pixiv doesn't allow un-logined clients to view r-18 or copyrighted data, so that's a no go.
+
+Still figuring outhow to integrate a loading bar using pySimpleGUI with current setup.
