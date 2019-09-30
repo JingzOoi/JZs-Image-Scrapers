@@ -3,6 +3,7 @@ import ext.pixiv as pixiv
 import ext.nhentai as nhentai
 import ext.misc as misc
 import ext.danbooru as danbooru
+import ext.twitter as twitter
 import requests
 
 sess = requests.Session()
@@ -19,6 +20,8 @@ def parse_url(url: str, return_details: bool = False):
         album = danbooru.Collection(url, session=sess)
     elif 'danbooru' in url and '/posts/' in url:
         album = danbooru.Post(url, session=sess)
+    elif 'twitter' in url:
+        album = twitter.Thread(url, session=sess)
     else:
         raise SiteNotSupportedException
 
@@ -75,5 +78,5 @@ while True:
             sg.PopupError(
                 "An error occured with the Pixiv artwork. \nIf the problem persists, contact the developer.", title="UserNotAuthorisedException")
 
-        except Exception:
-            sg.PopupError("An error has occured.", title="Exception")
+        # except Exception:
+        #     sg.PopupError("An error has occured.", title="Exception")
