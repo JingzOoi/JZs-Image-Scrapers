@@ -8,6 +8,13 @@ class AlbumNotFoundException(Exception):
     '''Raised when album is not found. Work may have been deleted, or the ID does not exist.'''
 
 
+def join_path(path_list: list):
+    path_str = ''
+    for directory in path_list:
+        path_str = os.path.join(path_str, directory)
+    return path_str
+
+
 def list_to_str(list_: list) -> str:
     list_str = ''
     for item in list_:
@@ -31,9 +38,12 @@ class Image:
     def __init__(self, url: str, category: str,  session: requests.Session = requests.Session(), name: str = None):
         self.url = url
         self.category = category
-        self.name = f'{name}{os.path.splitext(self.url)[-1]}' if name is not None else os.path.basename(
-            self.url)
+        self.name = f'{name}{os.path.splitext(self.url.replace(":orig", ""))[-1]}' if name is not None else os.path.basename(
+            self.url.replace(':orig', ''))
         self.sess = session
+
+    def __str__(self):
+        return f'{self.url}, {self.name}'
 
     def get_image(self):
         with self.sess.get(self.url, headers={"referer": self.url}) as page:
@@ -70,7 +80,8 @@ def download_images_from_url_list(images_url_list: list, category: str, session:
     for image_url in images_url_list:
         download_image_from_url(image_url, category, sess)
 
-def write_metadata(folder:str, content:str):
+
+def write_metadata(folder: str, content: str):
     with open(os.path.join(folder, 'metadata.txt'), 'w') as f:
         f.write(content)
 

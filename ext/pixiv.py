@@ -40,7 +40,8 @@ class Illust:
         except TypeError:
             raise UserNotAuthorisedException
 
-        self.category = f'Downloads\\pixiv\\[{self.details["user_id"]}] - {self.details["user_name"]}\\[{self.id}] - {self.details["illust_title"]}'
+        self.category = misc.join_path(
+            ['Downloads', 'pixiv', f'[{self.details["user_id"]}] - {self.details["user_name"]}', f'[{self.id}] - {self.details["illust_title"]}'])
 
     def __repr__(self) -> str:
         return "Pixiv Illust"
